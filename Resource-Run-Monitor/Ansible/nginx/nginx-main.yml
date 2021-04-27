@@ -1,0 +1,41 @@
+- hosts: monitoring
+  become: true
+  vars:
+    domain: monitoring
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+  - name: "apt-get update"
+    apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: "install nginx"
+    apt:
+      name: ['nginx']
+      state: latest
+
+  - name: delete default nginx.conf
+    file:
+      path: /etc/nginx/nginx.conf
+      state: absent
+    notify: restart nginx
+
+  - name: replace nginx.conf
+    template:
+      src: nginx.conf.j2
+      dest: /etc/nginx/nginx.conf
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart nginx
+
+  - name: Copy cert ssl to nginx
+    ansible.builtin.copy:
+      src: cert.pem
+      dest: /etc/nginx/cert.pem
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted

@@ -1,0 +1,31 @@
+#
+# ** THIS IS AN AUTO-GENERATED FILE **
+#
+
+# Default Kibana configuration for docker target
+server.name: kibana
+server.host: "0"
+elasticsearch.hosts: [ "http://elasticsearch:9200" ]
+monitoring.ui.container.elasticsearch.enabled: true
+
+# elasticsearch.username: elastic
+# elasticsearch.password: RootXXX123
+
+xpack.security.loginHelp: "**Help** info with a [link](...)"
+xpack.security.authc.providers:
+  basic.basic1:
+    order: 0
+    icon: "logoElasticsearch"
+    hint: "Typically for administrators"
+  saml.saml1:
+    order: 1
+    realm: saml1
+    description: "Log in with SSO"
+    icon: "https://my-company.xyz/saml-logo.svg"
+  saml.saml2:
+    order: 2
+    realm: saml2
+    showInSelector: false
+  kerberos.kerberos1:
+    order: 3
+    enabled: false

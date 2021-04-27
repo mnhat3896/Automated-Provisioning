@@ -1,0 +1,5 @@
+- name: Include install dokcer and run container
+  import_playbook: docker/docker-main.yml
+
+- name: Include install nginx
+  import_playbook: nginx/nginx-main.yml

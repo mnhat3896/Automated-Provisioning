@@ -1,0 +1,169 @@
+---
+- name: Install Docker
+  hosts: monitoring
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  vars_files:
+    - vars/default.yml
+  tasks:
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools', 'gnupg', 'lsb-release']
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: install docker
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+        state: "present"
+      loop:
+        - docker-ce=5:20.10.6~3-0~ubuntu-bionic
+        - docker-ce-cli=5:20.10.6~3-0~ubuntu-bionic
+        - containerd.io
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+- name: Run Container
+  hosts: monitoring
+  become_user: "{{ lookup('env', 'USER') }}"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    - name: get variable $HOME
+      shell: echo $HOME
+      register: home_path
+
+    - name: create folder to keep configuration files and data
+      file:
+        path: "{{ home_path.stdout }}{{ item.0 }}/data"
+        state: directory
+      loop: "{{ path_and_configuration_file }}"
+
+    - name: Change ownership of a prometheus's data
+      ansible.builtin.file:
+        path: "{{ home_path.stdout }}{{ path_and_configuration_file[2][0] }}/data"
+        state: directory
+        recurse: yes
+        owner: nobody
+      become: true
+      become_user: root
+
+    - name: Copy file to folder
+      ansible.builtin.copy:
+        # remote_src: yes
+        src: "{{ item.1 }}"
+        dest: "{{ home_path.stdout }}{{ item.0 }}"
+      loop: "{{ path_and_configuration_file }}"
+
+    - name: Create a network
+      community.general.docker_network:
+        name: "{{ network_container }}"
+      become: true
+      become_user: root
+
+    - name: Pull an image
+      community.docker.docker_image:
+        name: "{{ item }}"
+        source: pull
+      loop: "{{ images }}"
+      become: true
+      become_user: root
+
+    - name: Create containers elasticsearch
+      docker_container:
+        name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+        # command: "{{ default_container_command }}"
+        state: started
+        restart_policy: "{{ restart_policy }}"
+        restart: yes
+        networks:
+          - name: "{{ network_container }}"
+        env: "{{ elasticsearch_env }}"
+        volumes:
+          - "{{ home_path.stdout }}/bravo-monitoring/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml"
+          - "{{ home_path.stdout }}/bravo-monitoring/elasticsearch/data:/usr/share/elasticsearch/data"
+        ports:
+          - 9200:9200
+      with_sequence: count={{ create_containers }}
+      become: true
+      become_user: root
+
+    # Generate password for Elasticsearch just affect once. even you run thisk task many time
+    # If you want to change the passwords have generate, you need to delete the key store of elasticsearch container and rerun
+    # - name:
+    #   ansible.builtin.command: docker exec -it elasticsearch ./bin/elasticsearch-setup-passwords auto -b
+    #   become: yes
+    #   become_user: root
+    #   register: elastic_authentication_information
+
+    - name: Create containers kibana
+      docker_container:
+        name: kibana
+        image: docker.elastic.co/kibana/kibana:7.11.1
+        # command: "{{ default_container_command }}"
+        state: started
+        restart_policy: "{{ restart_policy }}"
+        networks:
+          - name: "{{ network_container }}"
+        env: "{{ kibana_env }}"
+        volumes:
+          - "{{ home_path.stdout }}/bravo-monitoring/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml"
+        ports:
+          - 5601:5601
+      with_sequence: count={{ create_containers }}
+      become: true
+      become_user: root
+
+    - name: Create containers prometheus
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:v2.26.0
+        # command: "{{ default_container_command }}"
+        state: started
+        restart_policy: "{{ restart_policy }}"
+        command: >
+          --config.file="/etc/prometheus/prometheus.yml"
+          --storage.tsdb.path="/prometheus/data"
+        networks:
+          - name: "{{ network_container }}"
+        volumes:
+          - "{{ home_path.stdout }}/bravo-monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+          - "{{ home_path.stdout }}/bravo-monitoring/prometheus/data:/prometheus/data"
+        ports:
+          - 9090:9090
+      with_sequence: count={{ create_containers }}
+      become: true
+      become_user: root
+
+    - name: Create containers grafana
+      docker_container:
+        name: grafana
+        image: grafana/grafana:7.5.2-ubuntu
+        # command: "{{ default_container_command }}"
+        state: started
+        restart_policy: "{{ restart_policy }}"
+        networks:
+          - name: "{{ network_container }}"
+        ports:
+          - 3000:3000
+      with_sequence: count={{ create_containers }}
+      become: true
+      become_user: root

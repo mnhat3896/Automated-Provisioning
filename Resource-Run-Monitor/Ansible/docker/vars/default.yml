@@ -1,0 +1,36 @@
+--- 
+#====== common variable ======
+create_containers: 1
+images:
+  - elasticsearch:7.11.1
+  - kibana:7.11.1
+path_and_configuration_file:
+  - [/bravo-monitoring/elasticsearch, ./configuration-file/elasticsearch.yml]
+  - [/bravo-monitoring/kibana, ./configuration-file/kibana.yml]
+  - [/bravo-monitoring/prometheus, ./configuration-file/prometheus.yml]
+network_container: bravo
+restart_policy: always
+# container_command: sleep 1d
+
+
+#====== container environment variable ======
+elasticsearch_env:
+  ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+  discovery.type: "single-node"
+  # NOTE: read from environment variable
+  # by default username is 'elastic' (cannot change)
+  ELASTIC_USERNAME: "elastic"
+  ELASTIC_PASSWORD: "{{ ELASTIC_PASSWORD }}"
+  
+
+kibana_env:
+  ELASTICSEARCH_URL: "elasticsearch:9200"
+  # NOTE: read from environment variable
+  # by default username is 'elastic' (cannot change)
+  ELASTICSEARCH_USERNAME: "elastic"
+  ELASTICSEARCH_PASSWORD: "{{ ELASTIC_PASSWORD }}"
+
+#====== container command ======
+prometheus_command:
+  - "--config.file='/etc/prometheus/prometheus.yml'"
+  - "--storage.tsdb.path='/prometheus/data'"
