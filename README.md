@@ -12,3 +12,9 @@ The main.sh is only used to test on local. If need you can to convert those step
 
     - Terraform on azure pipeline: https://azuredevopslabs.com/labs/vstsextend/terraform/
     - Ansible on azure pipeline: https://codingwithtaz.blog/2020/06/01/iac-ansible-with-azure-pipelines/
+
+---
+
+# Terraform-AKS
+
+- Use Terraform to provisioning AKS
