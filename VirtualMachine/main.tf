@@ -1,0 +1,94 @@
+# Create a resource group
+resource "azurerm_resource_group" "rg" {
+  name     = "resources-${local.common_labels.environment}"
+  location = var.location
+
+}
+
+# Network
+resource "azurerm_virtual_network" "vnet" {
+  name                = "vnet-${local.common_labels.environment}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  address_space       = var.vnet_address_space
+
+  tags = local.common_labels
+}
+
+resource "azurerm_subnet" "subnets" {
+  for_each = var.vnet_subnets
+
+  # count = length(var.vnet_subnets) > 0 ? length(var.vnet_subnets) : 0
+  # name                 = "${var.vnet_subnets[count.index].subnet_name}-${local.common_labels.environment}"
+  name                 = each.value.subnet_name
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = each.value.address_prefix
+
+}
+
+resource "azurerm_network_security_group" "nsg1" {
+  name                = "security-group-${local.common_labels.environment}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  security_rule {
+    name                       = "inbound_tcp_8080"
+    priority                   = 100
+    description                = "Allow traffic to instance via port 8080"
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8080"
+    source_address_prefix      = "Internet"
+    destination_address_prefix = "*"
+  }
+  security_rule {
+    name                       = "inbound_ssh"
+    priority                   = 101
+    description                = "Allow SSH to instance"
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+}
+
+resource "azurerm_route_table" "route_table" {
+  name                          = "route-table-${local.common_labels.environment}"
+  location                      = azurerm_resource_group.rg.location
+  resource_group_name           = azurerm_resource_group.rg.name
+  disable_bgp_route_propagation = false
+
+  # route {
+  #   name           = "route1"
+  #   address_prefix = "10.0.1.0/24"
+  #   next_hop_type  = "vnetlocal"
+  # }
+
+  dynamic "route" {
+    for_each = var.vnet_subnets
+    content {
+      name           = route.value.subnet_name
+      address_prefix = route.value.address_prefix[0]
+      next_hop_type  = "vnetlocal"
+    }
+  }
+
+  tags = local.common_labels
+}
+
+resource "azurerm_subnet_network_security_group_association" "subnet_nsg_association1" {
+  # count = length(var.vnet_subnets) > 0 ? length(var.vnet_subnets) : 0
+  for_each = var.vnet_subnets
+
+  subnet_id                 = azurerm_subnet.subnets[each.key].id
+  network_security_group_id = azurerm_network_security_group.nsg1.id
+}
+
+resource "random_uuid" "uuid" {
+}
