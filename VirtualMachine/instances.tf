@@ -1,6 +1,6 @@
 resource "azurerm_public_ip" "pub_ip" {
   count               = length(var.vm_instances)
-  name                = "vmLinux${count.index}-${local.common_labels.environment}"
+  name                = "publicIP-vm${count.index}-${local.common_labels.environment}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   zones               = ["${count.index + 1}"]
@@ -14,7 +14,7 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnets["${count.index + 1}"].id # NOTE: index phải dựa theo VM instance
+    subnet_id                     = azurerm_subnet.subnets["${count.index + 1}"].id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pub_ip[count.index].id
   }
@@ -29,7 +29,7 @@ resource "azurerm_linux_virtual_machine" "vm_linuxs" {
   size                = each.value.size
   admin_username      = each.value.admin_ssh_key.username
   network_interface_ids = [
-    azurerm_network_interface.nic["${each.key - 1}"].id
+    azurerm_network_interface.nic["${each.key}"].id
   ]
 
   zone = each.value.zone

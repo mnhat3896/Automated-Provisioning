@@ -1,11 +1,11 @@
-# Create a resource group
 resource "azurerm_resource_group" "rg" {
   name     = "resources-${local.common_labels.environment}"
   location = var.location
 
 }
-
-# Network
+#####################
+###### Network ######
+#####################
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${local.common_labels.environment}"
   location            = azurerm_resource_group.rg.location
@@ -20,7 +20,7 @@ resource "azurerm_subnet" "subnets" {
 
   # count = length(var.vnet_subnets) > 0 ? length(var.vnet_subnets) : 0
   # name                 = "${var.vnet_subnets[count.index].subnet_name}-${local.common_labels.environment}"
-  name                 = each.value.subnet_name
+  name                 = "${each.value.subnet_name}-${local.common_labels.environment}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = each.value.address_prefix
@@ -64,12 +64,6 @@ resource "azurerm_route_table" "route_table" {
   resource_group_name           = azurerm_resource_group.rg.name
   disable_bgp_route_propagation = false
 
-  # route {
-  #   name           = "route1"
-  #   address_prefix = "10.0.1.0/24"
-  #   next_hop_type  = "vnetlocal"
-  # }
-
   dynamic "route" {
     for_each = var.vnet_subnets
     content {
@@ -83,12 +77,41 @@ resource "azurerm_route_table" "route_table" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "subnet_nsg_association1" {
-  # count = length(var.vnet_subnets) > 0 ? length(var.vnet_subnets) : 0
-  for_each = var.vnet_subnets
+  count = length(var.vnet_subnets)
+  # for_each = var.vnet_subnets
 
-  subnet_id                 = azurerm_subnet.subnets[each.key].id
+  subnet_id                 = azurerm_subnet.subnets[count.index].id
   network_security_group_id = azurerm_network_security_group.nsg1.id
 }
 
 resource "random_uuid" "uuid" {
+}
+
+##########################
+###### LoadBalancer ######
+##########################
+
+module "instancesLB" {
+  source              = "Azure/loadbalancer/azurerm"
+  version             = "3.4.0"
+  resource_group_name = azurerm_resource_group.rg.name
+  name                = "lb-instances-${local.common_labels.environment}"
+  pip_name            = "publicIP-lb-${local.common_labels.environment}"
+  allocation_method   = "Dynamic"
+
+  # Protocols to be used for remote vm access. [protocol, backend_port]  
+  remote_port = {
+    ssh = ["Tcp", "22"]
+  }
+
+  # Protocols to be used for lb rules. Format as [frontend_port, protocol, backend_port]
+  lb_port = {
+    http = ["80", "Tcp", "80"]
+  }
+
+  lb_probe = {
+    http = ["Tcp", "80", ""]
+  }
+
+  tags = local.common_labels
 }

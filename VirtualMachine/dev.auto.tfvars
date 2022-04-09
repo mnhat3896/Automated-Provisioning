@@ -9,11 +9,11 @@ location = "southeastasia"
 
 vnet_address_space = ["10.0.0.0/16"]
 vnet_subnets = {
-  1 = {
+  0 = {
     subnet_name    = "subnet1"
     address_prefix = ["10.0.1.0/24"]
   }
-  2 = {
+  1 = {
     subnet_name    = "subnet2"
     address_prefix = ["10.0.2.0/24"]
   }
@@ -21,7 +21,7 @@ vnet_subnets = {
 
 
 vm_instances = {
-  1 = {
+  0 = {
     name     = "vmlinux1"
     location = "southeastasia"
     size     = "Standard_B1s"
@@ -41,7 +41,7 @@ vm_instances = {
       version   = "latest"
     }
   }
-  2 = {
+  1 = {
     name     = "vmlinux2"
     location = "southeastasia"
     size     = "Standard_B1s"
