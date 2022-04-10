@@ -3,10 +3,12 @@ resource "azurerm_public_ip" "pub_ip" {
   name                = "publicIP-vm${count.index}-${local.common_labels.environment}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  zones               = ["${count.index + 1}"] # NOTE (FIX): if there are more vms instance => 3 instances + 1 => break, this logic is not satisfy
+  zones               = ["${var.vm_instances[count.index].zone}"]
   # have to be above basic to using zones
-  sku                 = "Standard"
-  allocation_method   = "Static"
+  sku               = "Standard"
+  allocation_method = "Static"
+
+  tags = local.common_labels
 }
 resource "azurerm_network_interface" "nic" {
   count               = length(var.vm_instances)
@@ -20,6 +22,8 @@ resource "azurerm_network_interface" "nic" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pub_ip[count.index].id
   }
+
+  tags = local.common_labels
 }
 
 
@@ -36,7 +40,7 @@ resource "azurerm_linux_virtual_machine" "vm_linuxs" {
 
   zone = each.value.zone
 
-  custom_data = "${data.template_cloudinit_config.config.rendered}"
+  custom_data = data.template_cloudinit_config.config.rendered
 
   admin_ssh_key {
     username   = each.value.admin_ssh_key.username
@@ -54,4 +58,6 @@ resource "azurerm_linux_virtual_machine" "vm_linuxs" {
     sku       = each.value.source_image_reference.sku
     version   = each.value.source_image_reference.version
   }
+
+  tags = local.common_labels
 }
