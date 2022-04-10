@@ -3,8 +3,10 @@ resource "azurerm_public_ip" "pub_ip" {
   name                = "publicIP-vm${count.index}-${local.common_labels.environment}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  zones               = ["${count.index + 1}"]
-  allocation_method   = "Dynamic"
+  zones               = ["${count.index + 1}"] # NOTE (FIX): if there are more vms instance => 3 instances + 1 => break, this logic is not satisfy
+  # have to be above basic to using zones
+  sku                 = "Standard"
+  allocation_method   = "Static"
 }
 resource "azurerm_network_interface" "nic" {
   count               = length(var.vm_instances)
@@ -14,7 +16,7 @@ resource "azurerm_network_interface" "nic" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnets["${count.index + 1}"].id
+    subnet_id                     = azurerm_subnet.subnets["${count.index}"].id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.pub_ip[count.index].id
   }

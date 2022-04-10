@@ -38,4 +38,5 @@ override.tf.json
 
 .DS_Store
 
-/resources
+/resources/
+id_rsa

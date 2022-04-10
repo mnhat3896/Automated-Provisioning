@@ -98,6 +98,7 @@ module "instancesLB" {
   name                = "lb-instances-${local.common_labels.environment}"
   pip_name            = "publicIP-lb-${local.common_labels.environment}"
   allocation_method   = "Dynamic"
+  frontend_name       = "frontend-publicIP"
 
   # Protocols to be used for remote vm access. [protocol, backend_port]  
   remote_port = {
@@ -114,4 +115,8 @@ module "instancesLB" {
   }
 
   tags = local.common_labels
+
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
 }
