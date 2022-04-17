@@ -2,10 +2,9 @@ resource "azurerm_resource_group" "rg" {
   name     = "resources-${local.common_labels.environment}"
   location = var.location
 
+  tags = local.common_labels
 }
-#####################
-###### Network ######
-#####################
+
 resource "azurerm_virtual_network" "vnet" {
   name                = "vnet-${local.common_labels.environment}"
   location            = azurerm_resource_group.rg.location
@@ -18,8 +17,6 @@ resource "azurerm_virtual_network" "vnet" {
 resource "azurerm_subnet" "subnets" {
   for_each = var.vnet_subnets
 
-  # count = length(var.vnet_subnets) > 0 ? length(var.vnet_subnets) : 0
-  # name                 = "${var.vnet_subnets[count.index].subnet_name}-${local.common_labels.environment}"
   name                 = "${each.value.subnet_name}-${local.common_labels.environment}"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
@@ -71,7 +68,7 @@ resource "azurerm_route_table" "route_table" {
   dynamic "route" {
     for_each = {
       for k, v in var.vnet_subnets : k => v
-      # avoid creating route for subnet it self
+      # avoid creating a route for the subnet itself
       if v.subnet_name != var.vnet_subnets[count.index].subnet_name
     }
     content {
@@ -102,36 +99,3 @@ resource "azurerm_subnet_network_security_group_association" "subnet_nsg_associa
 resource "random_uuid" "uuid" {
 }
 
-##########################
-###### LoadBalancer ######
-##########################
-
-# module "instancesLB" {
-#   source              = "Azure/loadbalancer/azurerm"
-#   version             = "3.4.0"
-#   resource_group_name = azurerm_resource_group.rg.name
-#   name                = "lb-instances-${local.common_labels.environment}"
-#   pip_name            = "publicIP-lb-${local.common_labels.environment}"
-#   allocation_method   = "Dynamic"
-#   frontend_name       = "frontend-publicIP"
-
-#   # Protocols to be used for remote vm access. [protocol, backend_port]  
-#   remote_port = {
-#     ssh = ["Tcp", "22"]
-#   }
-
-#   # Protocols to be used for lb rules. Format as [frontend_port, protocol, backend_port]
-#   lb_port = {
-#     http = ["80", "Tcp", "80"]
-#   }
-
-#   lb_probe = {
-#     http = ["Tcp", "80", ""]
-#   }
-
-#   tags = local.common_labels
-
-#   depends_on = [
-#     azurerm_resource_group.rg
-#   ]
-# }
