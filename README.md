@@ -18,3 +18,7 @@ The main.sh is only used to test on local. If need you can to convert those step
 # Terraform-AKS
 
 - Use Terraform to provisioning AKS
+
+# VirtualMachine
+
+- Provisioning Linux instance with LB between
