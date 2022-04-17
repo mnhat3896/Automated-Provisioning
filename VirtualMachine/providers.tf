@@ -3,7 +3,13 @@
 
 terraform {
   required_version = ">=0.14"
-
+  backend "azurerm" {
+    resource_group_name  = "terraform_tfstate"
+    storage_account_name = "sademoazuretfstate"
+    container_name       = "tfstate"
+    key                  = "terraform.tfstate" 
+    access_key           = "" # Will be puted in when init
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
