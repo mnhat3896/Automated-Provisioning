@@ -10,10 +10,10 @@ terraform workspace new payment-gcp-dev
 ### Deploy resources
 init terraform
 ```
-terraform init
+terraform init -backend-config=dev.backend
 ```
 
 plan terraform
 ```
-terraform init -var-file dev.auto.tfvars
+terraform plan -var-file dev.tfvars
 ```

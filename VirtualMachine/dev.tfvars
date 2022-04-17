@@ -2,10 +2,9 @@
 ## DEV VARS ##
 ##############
 
-key_file        = "./resources/key-dev-be.json"
-subscription_id = "ddc0b7de-2a0d-4915-a225-db1c9ab6247b"
-
 location = "southeastasia"
+# SA json key
+key_file        = "./resources/key-dev-be.json"
 
 vnet_address_space = ["10.0.0.0/16"]
 vnet_subnets = {

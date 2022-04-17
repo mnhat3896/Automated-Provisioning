@@ -1,6 +1,7 @@
 variable "key_file" {
   type        = string
-  description = "SA json key location"
+  description = "SA json key"
+  default     = ""
 }
 
 variable "subscription_id" {

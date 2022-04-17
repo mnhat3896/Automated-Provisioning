@@ -4,7 +4,7 @@ resource "azurerm_public_ip" "pub_ip" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   zones               = ["${var.vm_instances[count.index].zone}"]
-  # have to be above basic to using zones
+  # have to be above basic to using Availability zones
   sku               = "Standard"
   allocation_method = "Static"
 
