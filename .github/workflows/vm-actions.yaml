@@ -14,11 +14,18 @@ jobs:
         working-directory: ./VirtualMachine
     steps:
       - name: Checkout
-        uses: actions/checkout@v3]
+        uses: actions/checkout@v3
 
-      - uses: azure/login@v1
+      - name: Azure CLI script
+        uses: azure/CLI@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          azcliversion: 2.30.0
+          inlineScript: |
+            az login --use-device-code
+
+      # - uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
