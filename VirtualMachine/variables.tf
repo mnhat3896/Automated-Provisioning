@@ -32,10 +32,10 @@ variable "vnet_subnets" {
 
 variable "vm_instances" {
   type = map(object({
-    name      = string
-    location  = string
-    size      = string
-    zone = string
+    name     = string
+    location = string
+    size     = string
+    zone     = string
     admin_ssh_key = object({
       username   = string
       public_key = any

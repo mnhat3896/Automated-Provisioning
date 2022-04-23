@@ -11,7 +11,7 @@ terraform {
   #   access_key           = "" # Will be puted in when init
   # }
   backend "local" {
-    
+
   }
   required_providers {
     azurerm = {
@@ -19,7 +19,7 @@ terraform {
       version = "~>2.97.0"
     }
     random = {
-      source = "hashicorp/random"
+      source  = "hashicorp/random"
       version = "~>3.1.2"
     }
   }
