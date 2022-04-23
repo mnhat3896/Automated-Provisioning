@@ -40,3 +40,9 @@ override.tf.json
 
 /resources/
 id_rsa
+
+resources/
+
+.terraform/
+
+.terraform
