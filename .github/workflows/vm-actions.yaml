@@ -16,12 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: echo
+        run: echo ${{ secrets.AZURE_CLIENT_ID }}
+
       - name: Azure CLI script
         uses: azure/CLI@v1
         with:
           azcliversion: 2.30.0
           inlineScript: |
-            az login --service-principal --username=${{ secrets.AZURE_CLIENT_ID }} -p=${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            az login --service-principal --username=${{ secrets.AZURE_CLIENT_ID }} -p=${{ secrets.AZURE_CLIENT_SECRET }} --tenant=${{ secrets.AZURE_TENANT_ID }}
 
       # - uses: azure/login@v1
       #   with:
