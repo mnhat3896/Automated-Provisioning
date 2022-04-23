@@ -1,11 +1,13 @@
 # Resource-Run-Monitor
 - Use Terraform to provisioning VM, VNET, Subnet, Keyvault, NSG, NIC, TLS Key on Azure
-- Use Ansible to configuration elasticsearch, prometheus, grafana, kibana base on docker except nginx
+- Use Ansible to configuration docker, nginx
 ### Folow:
 - Create Storage Account to store Terraform's stage (backend)
-- Provisioning resource with Terraform (dynamic backend when run terraform.sh)
-- Create container elasticsearch, kibana,...etc. with Ansible (dynamic inventory when run ansible.sh)
-- Install Nginx
+- Install Nginx (dynamic inventory when run ansible.sh)
+
+### Run scrip base on order
+1. ./terraform.sh (provisioning bucket backend)
+2. ./main.sh (run ansible-playbook)
 
 ### NOTE:
 The main.sh is only used to test on local. If need you can to convert those steps to pipeline for automation, check reference below
@@ -21,4 +23,4 @@ The main.sh is only used to test on local. If need you can to convert those step
 
 # VirtualMachine
 
-- Provisioning Linux instance with LB between
+- Provisioning Linux instance with LB
