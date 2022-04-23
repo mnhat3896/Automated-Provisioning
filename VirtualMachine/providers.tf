@@ -30,6 +30,10 @@ provider "azurerm" {
   features {}
   # credentials = var.key_file
   subscription_id = var.subscription_id
+  # use when run with service principle
+  # client_id       = ""
+  # client_secret   = ""
+  # tenant_id       = ""
 }
 
 provider "random" {

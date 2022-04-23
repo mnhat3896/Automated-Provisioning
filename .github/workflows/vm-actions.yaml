@@ -21,7 +21,7 @@ jobs:
         with:
           azcliversion: 2.30.0
           inlineScript: |
-            az login --service-principal -u ${{ secrets.AZURE_APPLICATION_ID_URL }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            az login --service-principal --username=${{ secrets.AZURE_CLIENT_ID }} -p=${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
       # - uses: azure/login@v1
       #   with:
@@ -55,8 +55,10 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -var "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" -var "ARM_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" -var "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
         continue-on-error: true
+
+
       - name: Show terraform plan with format
         uses: actions/github-script@6
         if: github.event_name == 'pull_request'
