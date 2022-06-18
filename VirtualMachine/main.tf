@@ -1,8 +1,5 @@
-# loads variables in the following order:
-# env vars -> terraform.tfvars -> *.auto.tfvars -> -var and -var-file
-
 terraform {
-  required_version = ">=0.14"
+  required_version = "~>1.1.7"
   # backend "azurerm" {
   #   resource_group_name  = "terraform_tfstate"
   #   storage_account_name = "sademoazuretfstate"
@@ -18,10 +15,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~>2.97.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~>3.1.2"
-    }
   }
 }
 
@@ -36,6 +29,20 @@ provider "azurerm" {
   # tenant_id       = ""
 }
 
-provider "random" {
-  # Configuration options
+
+resource "azurerm_resource_group" "rg" {
+  name     = "resources-${local.common_labels.environment}"
+  location = var.location
+
+  tags = local.common_labels
 }
+
+module "virtual_machine" {
+  source              = "./modules/compute"
+  vm_instances        = var.vm_instances
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  subnet_ids          = [ for subnet in azurerm_subnet.subnets: subnet.id ]
+  tags                = local.common_labels
+}
+
