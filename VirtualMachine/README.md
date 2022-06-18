@@ -58,7 +58,7 @@ terraform workspace select demo-azure-dev
 
 plan terraform
 ```
-terraform plan -var-file dev.tfvars -out dev-plan.tf
+terraform plan -var-file app-dev.tfvars -out dev-plan.tf
 ```
 
 apply terrafom

@@ -20,7 +20,7 @@ variable "vnet_address_space" {
   description = "The address space that is used the virtual network. You can supply more than one address space"
 }
 
-variable "vnet_subnets" {
+variable "subnets" {
   type = map(object({
     subnet_name    = string
     address_prefix = list(string)
