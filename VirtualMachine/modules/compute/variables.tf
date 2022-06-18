@@ -1,32 +1,8 @@
-variable "key_file" {
-  type        = string
-  description = "SA json key"
-  default     = ""
-}
-
-variable "subscription_id" {
-  type        = string
-  description = "a subscription id where will create resources"
-}
-
 variable "location" {
   type        = string
   description = "resource's location will be created"
 }
 
-# Network
-variable "vnet_address_space" {
-  type        = list(string)
-  description = "The address space that is used the virtual network. You can supply more than one address space"
-}
-
-variable "subnets" {
-  type = map(object({
-    subnet_name    = string
-    address_prefix = list(string)
-  }))
-  description = "subnet"
-}
 
 # Virtual machine
 
@@ -52,4 +28,19 @@ variable "vm_instances" {
     })
   }))
   description = "virtual machine instance"
+}
+
+variable "resource_group_name" {
+    type = string
+    description = "resource group name"
+}
+
+variable "subnet_ids" {
+    type = list(string)
+    description = "a list of subnet id"
+}
+
+variable "tags" {
+    type = map(string)
+    description = "tags"
 }

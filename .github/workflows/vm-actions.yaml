@@ -16,6 +16,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: echo
+        run: echo ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Azure CLI script
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az login --service-principal --username=${{ secrets.AZURE_CLIENT_ID }} -p=${{ secrets.AZURE_CLIENT_SECRET }} --tenant=${{ secrets.AZURE_TENANT_ID }}
+
+      # - uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         # with:
@@ -26,6 +40,7 @@ jobs:
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+
       - name: Terraform Init
         id: init
         run: terraform init
@@ -43,8 +58,10 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request'
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -var "ARM_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" -var "ARM_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" -var "ARM_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}"
         continue-on-error: true
+
+
       - name: Show terraform plan with format
         uses: actions/github-script@6
         if: github.event_name == 'pull_request'
