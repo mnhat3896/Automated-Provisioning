@@ -1,9 +1,3 @@
-
-terraform {
-  backend "azurerm" {
-  }
-}
-
 resource "tls_private_key" "key_ssh" {
   algorithm = "RSA"
   rsa_bits = 4096

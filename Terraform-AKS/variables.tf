@@ -31,24 +31,6 @@ variable "am_variable_subcription_id" {
   description = "This is Subscription's Id variable used for automation-account's variable"
 }
 
-# ====== variable for STORAGE ACCOUNT ======
-variable "storage_account_name" {
-  default = "saXXXXsystest"
-}
-
-variable "storage_account_container_name1" {
-  default = "cvapp-apply"
-}
-
-variable "storage_account_container_name2" {
-  default = "systemtest"
-}
-
-# ====== variable for SERVICEBUS ======
-variable "servicebus_name" {
-  default = "sb-XXXX-systemtest"
-}
-
 # ====== variable for K8S ======
 variable "k8s_linux_profile_username" {
   default = "sysadmin"
