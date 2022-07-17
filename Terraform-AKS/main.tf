@@ -3,19 +3,15 @@ resource "tls_private_key" "key_ssh" {
   rsa_bits = 4096
 }
 
-data "azurerm_resource_group" "rg_systemtest" {
-  name = "rg-systemtest"
-}
-
-resource "azurerm_resource_group" "rg_systemtest" {
-  name     = "rg_systemtest"
-  location = ""
+resource "azurerm_resource_group" "rg_aks" {
+  name     = "rg_aks"
+  location = "eastasia"
 }
 
 resource "azurerm_kubernetes_cluster" "k8s" {
   name                = var.cluster_name
-  location            = data.azurerm_resource_group.rg_systemtest.location
-  resource_group_name = data.azurerm_resource_group.rg_systemtest.name
+  location            = azurerm_resource_group.rg_aks.location
+  resource_group_name = azurerm_resource_group.rg_aks.name
   dns_prefix          = var.dns_prefix
   tags = var.tags
 
@@ -45,23 +41,14 @@ resource "azurerm_kubernetes_cluster" "k8s" {
     enable_auto_scaling = var.k8s_node_pool_enable_auto_scaling
   }
 
-  role_based_access_control {
-    enabled = true
-  }
-
   network_profile {
     network_plugin    = "kubenet"
     # Standard is required because using VirtualMachineScaleSets
-    load_balancer_sku = "Standard"
+    load_balancer_sku = "basic"
     # load_balancer_profile {
     #   outbound_ip_address_ids = [azurerm_public_ip.public_ip.id]
     # }
-    }
-
-  addon_profile {
-    kube_dashboard {
-      enabled = true
-    }
+    network_policy = "calico"
   }
 
   timeouts {
@@ -74,7 +61,7 @@ resource "azurerm_kubernetes_cluster" "k8s" {
 resource "azurerm_virtual_network" "vnet" {
   name                = "aks-vnet"
   location            = var.location
-  resource_group_name = data.azurerm_resource_group.rg_systemtest.name
+  resource_group_name = azurerm_resource_group.rg_aks.name
   address_space       = ["10.250.0.0/16"]
 
   # subnet = []
@@ -89,7 +76,7 @@ resource "azurerm_virtual_network" "vnet" {
 
 resource "azurerm_subnet" "subnet" {
   name                 = "subnet-aks"
-  resource_group_name  = data.azurerm_resource_group.rg_systemtest.name
+  resource_group_name  = azurerm_resource_group.rg_aks.name
   virtual_network_name = azurerm_virtual_network.vnet.name 
   address_prefixes     = ["10.250.1.0/24"]
   depends_on           = [azurerm_virtual_network.vnet]
@@ -98,8 +85,8 @@ resource "azurerm_subnet" "subnet" {
 
 # resource "azurerm_public_ip" "public_ip" {
 #   name                = "public-ip-aks"
-#   resource_group_name = data.azurerm_resource_group.rg_systemtest.name
-#   location            = data.azurerm_resource_group.rg_systemtest.location
+#   resource_group_name = azurerm_resource_group.rg_aks.name
+#   location            = azurerm_resource_group.rg_aks.location
 #   allocation_method   = "Static"
 #   sku                 = "Standard"
 #   idle_timeout_in_minutes = "30"

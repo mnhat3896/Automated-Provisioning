@@ -1,34 +1,28 @@
 
 variable "resource_group_name" {
   description = "The resource_group_name is used for Kubernetes's resource"
-  default = "rg-k8s_XXXX-systemtest"
+  default = "rg-k8s_aks-lab"
 }
 
 variable "location" {
   description = "Define the location you want to put these resources to. (example: Southeast Asia) "
-  default = "Southeast Asia"
+  default = "eastasia"
 }
 # ===============================================
 
 variable "tags" {
   default = {
-    project-env = "XXXX-systemtest"
+    project-env = "aks-lab"
   }
 }
 
 variable "cluster_name" {
-  default = "aks-XXXX-systemtest"
+  default = "aks-aks-lab"
 }
 
 variable "dns_prefix" {
-  default = "XXXX-systemtest-dns"
+  default = "aks-lab-dns"
   description = "DNS name prefix to use with the hosted Kubernetes API server. Use this to connect to the Kubernetes API when managing containers after creating the cluster."
-}
-
-# ====== variable for AUTOMATION ACCOUNT ======
-
-variable "am_variable_subcription_id" {
-  description = "This is Subscription's Id variable used for automation-account's variable"
 }
 
 # ====== variable for K8S ======
@@ -46,7 +40,7 @@ variable "k8s_vm_size" {
 }
 
 variable "k8s_version" {
-  default = "1.18.10"
+  default = "1.21.14"
 }
 
 variable "k8s_node_pool_type" {
